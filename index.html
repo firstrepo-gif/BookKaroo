@@ -27,7 +27,9 @@
 
         window.submitBooking = async (e) => {
             e.preventDefault();
-            const status = document.getElementById('status');
+            const form = document.getElementById('bookingForm');
+            const successDiv = document.getElementById('successMessage');
+            
             try {
                 await addDoc(collection(db, "bookings"), {
                     name: document.getElementById('name').value,
@@ -35,7 +37,9 @@
                     phone: document.getElementById('phone').value,
                     currentLoc: document.getElementById('currentLoc').value,
                     stayLoc: document.getElementById('stayLoc').value,
-                    guests: document.getElementById('guests').value,
+                    countAdults: document.getElementById('adults').value,
+                    countChildren: document.getElementById('children').value,
+                    countSeniors: document.getElementById('seniors').value,
                     checkin: document.getElementById('checkin').value,
                     checkout: document.getElementById('checkout').value,
                     propertyType: document.getElementById('propType').value,
@@ -43,9 +47,14 @@
                     status: "Pending",
                     timestamp: serverTimestamp()
                 });
-                status.innerText = "Booking request submitted to BookKaro!";
-                e.target.reset();
-            } catch (err) { status.innerText = "Error: " + err.message; }
+                
+                // Hide form and show success tick
+                form.style.display = 'none';
+                successDiv.style.display = 'block';
+                
+            } catch (err) { 
+                alert("Submission Error: " + err.message); 
+            }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -56,24 +65,48 @@
     <style>
         body { background-color: #e8f5e9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #01579b; }
         .form-card { background: #e3f2fd; max-width: 550px; margin: 40px auto; padding: 25px; border-radius: 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); border: 2px solid #81c784; }
-        h1 { text-align: center; color: #2e7d32; }
+        h1 { text-align: center; color: #2e7d32; margin-bottom: 20px; }
         input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #90caf9; border-radius: 8px; box-sizing: border-box; }
-        button { background-color: #4caf50; color: white; padding: 14px; border: none; width: 100%; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .guest-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 8px 0; }
+        .guest-grid div label { font-size: 12px; color: #2e7d32; font-weight: bold; }
+        button { background-color: #4caf50; color: white; padding: 14px; border: none; width: 100%; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
         button:hover { background-color: #388e3c; }
+        
+        /* Success Message Styles */
+        #successMessage { display: none; text-align: center; padding: 40px 10px; }
+        .tick-icon { font-size: 80px; color: #2e7d32; margin-bottom: 20px; }
+        .success-text { font-size: 18px; color: #2e7d32; font-weight: 500; }
     </style>
 </head>
 <body>
     <div class="form-card">
         <h1>BookKaro 🌿🏕️</h1>
-        <form onsubmit="submitBooking(event)">
+        
+        <form id="bookingForm" onsubmit="submitBooking(event)">
             <input type="text" id="name" placeholder="Full Name" required>
             <input type="email" id="email" placeholder="Email Address" required>
             <input type="tel" id="phone" placeholder="Contact Number" required>
             <input type="text" id="currentLoc" placeholder="Your Location in India" required>
             <input type="text" id="stayLoc" placeholder="Destination (City/State)" required>
-            <input type="number" id="guests" placeholder="Number of Guests" min="1" required>
+            
+            <div class="guest-grid">
+                <div>
+                    <label>Adults</label>
+                    <input type="number" id="adults" placeholder="0" min="1" value="1" required>
+                </div>
+                <div>
+                    <label>Children</label>
+                    <input type="number" id="children" placeholder="0" min="0" value="0" required>
+                </div>
+                <div>
+                    <label>Seniors</label>
+                    <input type="number" id="seniors" placeholder="0" min="0" value="0" required>
+                </div>
+            </div>
+
             <label>Check-in Date:</label> <input type="date" id="checkin" onchange="validateDates()" required>
             <label>Check-out Date:</label> <input type="date" id="checkout" required>
+            
             <select id="propType">
                 <option value="Cottage">Cottage</option>
                 <option value="Villa">Villa</option>
@@ -82,10 +115,18 @@
                 <option value="Hostel">Hostel</option>
                 <option value="Row House">Row House</option>
             </select>
+            
             <textarea id="pref" placeholder="Describe your property preference or specific idea..."></textarea>
             <button type="submit">Submit Request</button>
         </form>
-        <p id="status" style="text-align: center; font-weight: bold;"></p>
+
+        <div id="successMessage">
+            <div class="tick-icon">✔</div>
+            <div class="success-text">
+                Booking request submitted to BookKaro!<br><br>
+                <small style="color: #555;">You will receive your response in the next 24 hours.</small>
+            </div>
+        </div>
     </div>
 </body>
 </html>
